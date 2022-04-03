@@ -56,8 +56,8 @@ pre{
   background-color: #333a4113;
   color: #59316B;
 }
-code{
-  word-wrap: break-word;
+.code{
+  word-wrap: break-word !important;
 }
 .md{
   color: white;
