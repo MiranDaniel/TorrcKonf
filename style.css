@@ -1,0 +1,69 @@
+@font-face {
+    font-family: "Source Sans Pro";
+    src: url("https://www.torproject.org/static/fonts/SourceSansPro/SourceSansPro-Regular.ttf");
+  }
+  @font-face {
+    font-family: "Source Sans Pro Light";
+    src: url("https://www.torproject.org/static/fonts/SourceSansPro/SourceSansPro-Light.ttf");
+  }
+  @font-face {
+    font-family: "Source Sans Pro Bold";
+    src: url("https://www.torproject.org/static/fonts/SourceSansPro/SourceSansPro-Bold.ttf");
+  }
+
+
+html, body{
+    color: #FFFFFF;
+    width: 100%;
+    max-width: 100%;
+}
+.display-1,
+.display-2,
+.display-3{
+    font-family: "Source Sans Pro" !important;
+}
+
+footer{
+    bottom: 0;
+    left: 0;
+    position:relative;
+    width: 100%;
+}
+.icon{
+  filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(250deg) brightness(50%) contrast(80%);
+  width: 5rem;
+}
+
+.btn:hover .icon,
+.clicked .icon{
+  filter: invert(100%);
+}
+.clicked{
+  background-color: #59316B;
+  color: white;
+}
+
+.btn:hover{
+  cursor: pointer;
+}
+.wrapper{
+  aspect-ratio: 2.2 !important;
+}
+.generate{
+  width: 100%;
+}
+pre{
+  background-color: #333a4113;
+  color: #59316B;
+}
+code{
+  word-wrap: break-word;
+}
+.md{
+  color: white;
+  text-decoration: underline;
+}
+.md:hover{
+  color: #59316B;
+  background-color: #F8F9FA;
+}

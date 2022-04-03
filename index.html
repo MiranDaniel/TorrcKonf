@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="http://www.torproject.org/static/css/bootstrap.css?h=9a88fd98">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <header class="container-fluid text-center bg-dark text-light text-center">
+        <div class="row justify-content-md-center">
+            <div class="col-sm-8 py-5 text-center">
+                <h1 class="display-3 text-white">torrc configuration generator</h1>
+                <h2>Easily generate the torrc configuration for your node.</h2>
+            </div>
+        </div>
+    </header>
+    <noscript>
+        <div class="py-3">
+            <div class="container alert alert-danger">
+                <div class="mx-5">
+                    <div class="row">
+                        <strong>This website needs JavaScript enabled to function!</strong>
+                    </div>
+                    <div class="row">
+                        <small class="my-0 py-0">We understand that you don't like JavaScript, we also don't. This
+                            website needs JavaScript to generate the configuration based on your choices. We do not use
+                            any tracking or fingerprinting. You can view the view source code of this website, or <a
+                                href="/script.js">view the JavaScript of this website.</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </noscript>
+    <main class="container text-dark text-center py-2">
+        <div class="my-2">
+            <div class="row justify-content-md-center">
+                <h3>What kind of a node will this be?</h3>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-3 border mx-2 my-1 border-dark rounded py-2 btn btn-outline-primary"
+                    onclick="typeChoice('choice-bridge')" id="choice-bridge">
+                    <div class="wrapper"><img src="dist/128x128/bridge.png" alt="" class="icon"></div>
+                    <h4 class="h3">Bridge</h4>
+                </div>
+                <div class="col-sm-3 border mx-2 my-1 border-dark rounded py-2 btn btn-outline-primary"
+                    onclick="typeChoice('choice-relay')" id="choice-relay">
+                    <div class="wrapper"><img src="dist/128x128/relay.png" alt="" class="icon"></div>
+                    <h4 class="h3">Relay</h4>
+                </div>
+                <div class="col-sm-3 border mx-2 my-1 border-dark rounded py-2 btn btn-outline-primary"
+                    onclick="typeChoice('choice-exit')" id="choice-exit">
+                    <div class="wrapper"><img src="dist/128x128/exit.png" alt="" class="icon"></div>
+                    <h4 class="h3">Exit</h4>
+                </div>
+            </div>
+        </div>
+        <div class="my-2">
+            <div class="row justify-content-md-center">
+                <h3>Relay name</h3>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">A name for your relay, so people don't have to refer to it by key.
+                    </p>
+                    <input type="text" maxlength="19" minlength="1" class="form-control textbox" id="input-relay-name"
+                        placeholder="Enter your node name">
+                    <small class="form-text text-muted my-0 py-0">If not set, Unnamed will be used. Relays can always be
+                        uniquely identified by their identity fingerprints.</small>
+                </div>
+            </div>
+        </div>
+        <div class="my-2">
+            <div class="row justify-content-md-center">
+                <h3>Contact information</h3>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">Administrative contact information for this relay or bridge.</p>
+                    <input type="text" class="form-control textbox" id="input-relay-contact"
+                        placeholder="Enter your contact information">
+                    <small class="form-text text-muted my-0 py-0"> This
+                        can be used to contact you if your relay or bridge is misconfigured or
+                        something else goes wrong. Note that we archive and publish all
+                        descriptors containing these lines and that Google indexes them, so
+                        spammers might also collect them. You may want to obscure the fact that
+                        it's an email address and/or generate a new address for this purpose.</small>
+                </div>
+            </div>
+        </div>
+        <div class="my-2">
+            <div class="row justify-content-md-center">
+                <h3>Port configuration</h3>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-4 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">ORPort</p>
+                    <input type="number" class="form-control textbox" id="input-relay-orport"
+                        placeholder="Enter your ORPort">
+                    <small class="form-text text-muted my-0 py-0">Advertise this port to listen for connections from Tor
+                        clients and servers.</small>
+                </div>
+                <div class="col-sm-4 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">DirPort</p>
+                    <input type="number" class="form-control textbox" id="input-relay-dirport"
+                        placeholder="Enter your DirPort">
+                        
+                    <small class="form-text text-muted my-0 py-0">Port for directory connections.</small>
+                </div>
+            </div>
+        </div>
+        <div class="my-2">
+            <div class="row justify-content-md-center">
+                <h3>Network</h3>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">IPv6</p>
+                    <input type="text" class="form-control textbox" id="input-relay-ipvsix"
+                        placeholder="Enter your nodes IPv6 address">
+                        
+                    <small class="form-text text-muted my-0 py-0">If left empty, IPv6 will be automatically disabled</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="my-3">
+            <div class="row justify-content-md-center">
+                <div class="col-sm-7 mx-2 my-1 rounded py-2">
+                    <button onclick="generate()" type="submit" class="btn btn-primary generate py-3">
+                        <a href="#generated"><h4 id="loader" class="text-light">Generate!</h4></a>
+                    </button>
+                    <small>By clicking "Generate!" you agree that this website/service is proviced without warranty of any kind.</small>
+                </div>
+            </div>
+        </div>
+        <div class="my-3">
+            <div class="row justify-content-md-center">
+                <div class="col-sm-8 mx-2 my-1 rounded py-2">
+                    <pre
+                        class="text-left py-2 px-2"><code id="output">Press the button above to generate your configuration! :)</code></pre>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container-fluid bg-dark footer order-last text-left">
+            <div class="row onion-bg">
+                <div class="col-12 d-flex justify-content-right">
+                    <div class="container py-4 justify-content-right">
+                        <div class="offset-lx-2 offset-sm-4" id="generated">
+                            <h2 class="text-white text-bold">Website by <a href="https://mirandaniel.com" class="md rounded">MiranDaniel</a></h2>
+                            <p class="text-white">This project is free & OpenSource! Please consider donating
+                                to keep it running!</p>
+                            <div class="container text-light">
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <p class="text-light h5">Monero</p>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <small
+                                        class="bg-dark text-light code">42dN1SjyQNFMu3hPjJZqXa4Z8oMMLLiPzHmC4q8h3DXWS2gHxpjACxcWyAReJGqN4RX79VTE8pEn6SVxgjCJTXhg5ECB9Qe</small>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-3">
+                                        <p class="text-light h5">Ethereum/EVM</p>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <small
+                                        class="bg-dark text-light code">0x20D3c078958A2b866F9F423a722aF5a92bc7e08b</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+
+                            <small>This product is produced independently from the Tor® anonymity software and carries
+                                no guarantee from The Tor Project about quality, suitability or anything else. THE
+                                SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+<script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
+
+<script src="script.js"></script>
+
+</html>
