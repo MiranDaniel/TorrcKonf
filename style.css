@@ -38,6 +38,10 @@ footer{
 .clicked .icon{
   filter: invert(100%);
 }
+.switch{
+  display: inline-block;
+  vertical-align: middle;
+}
 .clicked{
   background-color: #59316B;
   color: white;

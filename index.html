@@ -17,7 +17,9 @@
 
     <link rel="stylesheet" href="http://www.torproject.org/static/css/bootstrap.css?h=9a88fd98">
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
 
+    <script src="script.js"></script>
 </head>
 
 <body>
@@ -74,7 +76,7 @@
                 <h3>Relay name</h3>
             </div>
             <div class="row justify-content-md-center">
-                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
+                <div class="col-sm-9 border mx-2 my-1 border-dark rounded py-2">
                     <p class="my-0 py-0 text-dark">A name for your relay, so people don't have to refer to it by key.
                     </p>
                     <input type="text" maxlength="19" minlength="1" class="form-control textbox" id="input-relay-name"
@@ -89,7 +91,7 @@
                 <h3>Contact information</h3>
             </div>
             <div class="row justify-content-md-center">
-                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
+                <div class="col-sm-9 border mx-2 my-1 border-dark rounded py-2">
                     <p class="my-0 py-0 text-dark">Administrative contact information for this relay or bridge.</p>
                     <input type="text" class="form-control textbox" id="input-relay-contact"
                         placeholder="Enter your contact information">
@@ -118,7 +120,7 @@
                     <p class="my-0 py-0 text-dark">DirPort</p>
                     <input type="number" class="form-control textbox" id="input-relay-dirport"
                         placeholder="Enter your DirPort">
-                        
+
                     <small class="form-text text-muted my-0 py-0">Port for directory connections.</small>
                 </div>
             </div>
@@ -128,23 +130,47 @@
                 <h3>Network</h3>
             </div>
             <div class="row justify-content-md-center">
-                <div class="col-sm-7 border mx-2 my-1 border-dark rounded py-2">
-                    <p class="my-0 py-0 text-dark">IPv6</p>
+                <div class="col-sm-9 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">IPv6 <small>[optional]</small></p>
                     <input type="text" class="form-control textbox" id="input-relay-ipvsix"
                         placeholder="Enter your nodes IPv6 address">
-                        
-                    <small class="form-text text-muted my-0 py-0">If left empty, IPv6 will be automatically disabled</small>
+
+                    <small class="form-text text-muted my-0 py-0">If left empty, IPv6 will be automatically
+                        disabled</small>
+                </div>
+            </div>
+            <div class="row justify-content-md-center">
+                <div class="col-sm-8 border mx-2 my-1 border-dark rounded py-2">
+                    <p class="my-0 py-0 text-dark">Reduced output</p>
+                    <div class="container">
+                        <div class="row jutify-content-md-center">
+                            <div class="col-md-6">
+                                <button id="input-reduced-on" onclick="reducedChoice('input-reduced-on')" type="button"
+                                    class="btn btn-outline-primary w-100">Enable
+                                    reduced
+                                    output</button>
+                            </div>
+                            <div class="col-md-6">
+                                <button id="input-reduced-off" onclick="reducedChoice('input-reduced-off')"
+                                    type="button" class="btn btn-outline-primary w-100">Disable reduced
+                                    output</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="my-3">
             <div class="row justify-content-md-center">
                 <div class="col-sm-7 mx-2 my-1 rounded py-2">
                     <button onclick="generate()" type="submit" class="btn btn-primary generate py-3">
-                        <a href="#generated"><h4 id="loader" class="text-light">Generate!</h4></a>
+                        <a href="#generated">
+                            <h4 id="loader" class="text-light">Generate!</h4>
+                        </a>
                     </button>
-                    <small>By clicking "Generate!" you agree that this website/service is proviced without warranty of any kind.</small>
+                    <small>By clicking "Generate!" you agree that this website/service is proviced without warranty of
+                        any kind.</small>
                 </div>
             </div>
         </div>
@@ -164,7 +190,8 @@
                 <div class="col-12 d-flex justify-content-right">
                     <div class="container py-4 justify-content-right">
                         <div class="offset-lx-2 offset-sm-4" id="generated">
-                            <h2 class="text-white text-bold">Website by <a href="https://mirandaniel.com" class="md rounded">MiranDaniel</a></h2>
+                            <h2 class="text-white text-bold">Website by <a href="https://mirandaniel.com"
+                                    class="md rounded">MiranDaniel</a></h2>
                             <p class="text-white">This project is free & OpenSource! Please consider donating
                                 to keep it running!</p>
                             <div class="container text-light">
@@ -174,7 +201,7 @@
                                     </div>
                                     <div class="col-sm-5">
                                         <small
-                                        class="bg-dark text-light code">42dN1SjyQNFMu3hPjJZqXa4Z8oMMLLiPzHmC4q8h3DXWS2gHxpjACxcWyAReJGqN4RX79VTE8pEn6SVxgjCJTXhg5ECB9Qe</small>
+                                            class="bg-dark text-light code">42dN1SjyQNFMu3hPjJZqXa4Z8oMMLLiPzHmC4q8h3DXWS2gHxpjACxcWyAReJGqN4RX79VTE8pEn6SVxgjCJTXhg5ECB9Qe</small>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -183,7 +210,7 @@
                                     </div>
                                     <div class="col-sm-5">
                                         <small
-                                        class="bg-dark text-light code">0x20D3c078958A2b866F9F423a722aF5a92bc7e08b</small>
+                                            class="bg-dark text-light code">0x20D3c078958A2b866F9F423a722aF5a92bc7e08b</small>
                                     </div>
                                 </div>
                             </div>
@@ -199,8 +226,5 @@
         </div>
     </footer>
 </body>
-<script src="https://unpkg.com/typewriter-effect@latest/dist/core.js"></script>
-
-<script src="script.js"></script>
 
 </html>

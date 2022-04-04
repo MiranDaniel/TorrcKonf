@@ -1,6 +1,84 @@
+var exitPolicy = `
+ExitPolicy accept *:20-23     # FTP, SSH, telnet
+ExitPolicy accept *:43        # WHOIS
+ExitPolicy accept *:53        # DNS
+ExitPolicy accept *:79-81     # finger, HTTP
+ExitPolicy accept *:88        # kerberos
+ExitPolicy accept *:110       # POP3
+ExitPolicy accept *:143       # IMAP
+ExitPolicy accept *:194       # IRC
+ExitPolicy accept *:220       # IMAP3
+ExitPolicy accept *:389       # LDAP
+ExitPolicy accept *:443       # HTTPS
+ExitPolicy accept *:464       # kpasswd
+ExitPolicy accept *:465       # URD for SSM (more often: an alternative SUBMISSION port, see 587)
+ExitPolicy accept *:531       # IRC/AIM
+ExitPolicy accept *:543-544   # Kerberos
+ExitPolicy accept *:554       # RTSP
+ExitPolicy accept *:563       # NNTP over SSL
+ExitPolicy accept *:587       # SUBMISSION (authenticated clients [MUA's like Thunderbird] send mail over STARTTLS SMTP here)
+ExitPolicy accept *:636       # LDAP over SSL
+ExitPolicy accept *:706       # SILC
+ExitPolicy accept *:749       # kerberos
+ExitPolicy accept *:873       # rsync
+ExitPolicy accept *:902-904   # VMware
+ExitPolicy accept *:981       # Remote HTTPS management for firewall
+ExitPolicy accept *:989-990   # FTP over SSL
+ExitPolicy accept *:991       # Netnews Administration System
+ExitPolicy accept *:992       # TELNETS
+ExitPolicy accept *:993       # IMAP over SSL
+ExitPolicy accept *:994       # IRCS
+ExitPolicy accept *:995       # POP3 over SSL
+ExitPolicy accept *:1194      # OpenVPN
+ExitPolicy accept *:1220      # QT Server Admin
+ExitPolicy accept *:1293      # PKT-KRB-IPSec
+ExitPolicy accept *:1500      # VLSI License Manager
+ExitPolicy accept *:1533      # Sametime
+ExitPolicy accept *:1677      # GroupWise
+ExitPolicy accept *:1723      # PPTP
+ExitPolicy accept *:1755      # RTSP
+ExitPolicy accept *:1863      # MSNP
+ExitPolicy accept *:2082      # Infowave Mobility Server
+ExitPolicy accept *:2083      # Secure Radius Service (radsec)
+ExitPolicy accept *:2086-2087 # GNUnet, ELI
+ExitPolicy accept *:2095-2096 # NBX
+ExitPolicy accept *:2102-2104 # Zephyr
+ExitPolicy accept *:3128      # SQUID
+ExitPolicy accept *:3389      # MS WBT
+ExitPolicy accept *:3690      # SVN
+ExitPolicy accept *:4321      # RWHOIS
+ExitPolicy accept *:4643      # Virtuozzo
+ExitPolicy accept *:5050      # MMCC
+ExitPolicy accept *:5190      # ICQ
+ExitPolicy accept *:5222-5223 # XMPP, XMPP over SSL
+ExitPolicy accept *:5228      # Android Market
+ExitPolicy accept *:5900      # VNC
+ExitPolicy accept *:6660-6669 # IRC
+ExitPolicy accept *:6679      # IRC SSL
+ExitPolicy accept *:6697      # IRC SSL
+ExitPolicy accept *:8000      # iRDMI
+ExitPolicy accept *:8008      # HTTP alternate
+ExitPolicy accept *:8074      # Gadu-Gadu
+ExitPolicy accept *:8080      # HTTP Proxies
+ExitPolicy accept *:8082      # HTTPS Electrum Bitcoin port
+ExitPolicy accept *:8087-8088 # Simplify Media SPP Protocol, Radan HTTP
+ExitPolicy accept *:8332-8333 # Bitcoin
+ExitPolicy accept *:8443      # PCsync HTTPS
+ExitPolicy accept *:8888      # HTTP Proxies, NewsEDGE
+ExitPolicy accept *:9418      # git
+ExitPolicy accept *:9999      # distinct
+ExitPolicy accept *:10000     # Network Data Management Protocol
+ExitPolicy accept *:11371     # OpenPGP hkp (http keyserver protocol)
+ExitPolicy accept *:19294     # Google Voice TCP
+ExitPolicy accept *:19638     # Ensim control panel
+ExitPolicy accept *:50002     # Electrum Bitcoin SSL
+ExitPolicy accept *:64738     # Mumble
+ExitPolicy reject *:*`
+
 var app = document.getElementById('loader'); // loader in button
 
 var type_ = null; // type of node (bridge, relay, exit)
+var reduced_ = null;
 var output_ = "";
 
 
@@ -18,6 +96,8 @@ class Konf {
         this.ipvsix = null;
         this.socksPort = null;
 
+        this.reduced = null;
+
         this.conf = Array();
     }
     setType(t_) {
@@ -33,28 +113,35 @@ class Konf {
         this.orPort = or_;
         this.dirPort = dir_;
     }
-    setName(name_){
-        if(name_ === null){
+    setName(name_) {
+        if (name_ === null) {
             this.name = "Unnamed"
-        } else{
+        } else {
             this.name = name_;
         }
     }
-    setContact(con_){
+    setContact(con_) {
         this.contact = con_;
     }
-    setIpvsix(addy_){
+    setIpvsix(addy_) {
         this.ipvsix = addy_;
     }
-    setSocks(port_){
+    setSocks(port_) {
         this.socksPort = 0; // optional socks will be implemented later
+    }
+    setReduced(option_) {
+        if (option_ === "input-reduced-on") {
+            this.reduced = exitPolicy;
+        } else {
+            this.reduced = false;
+        }
     }
 
 
     preDump() {
         this.conf.push(`ORPort ${this.orPort}`)
-        if(this.ipvsix !== null){
-            this.conf.push(`ORPort [${this.ipvsix}]${this.orPort}`)
+        if (this.ipvsix !== null) {
+            this.conf.push(`ORPort [${this.ipvsix}]:auto`)
         }
         this.conf.push(`DirPort ${this.dirPort}`)
         this.conf.push(`Nickname ${this.name}`)
@@ -67,10 +154,15 @@ class Konf {
         }
         if (this.exitRelay !== null) {
             this.conf.push(`ExitRelay ${this.exitRelay}`)
-            if(this.ipvsix !== null){
+            if (this.ipvsix !== null) {
                 this.conf.push(`IPv6Exit 1`)
             }
         }
+
+        if (this.reduced !== false) {
+            this.conf.push(this.reduced)
+        }
+
         return this.conf
     }
 
@@ -93,6 +185,20 @@ function typeChoice(choice) { // handler for type picker
         type_ = choice;
     }
 }
+function reducedChoice(choice) {
+    if (choice === reduced_) {
+        return;
+    } else if (reduced_ === null) {
+        document.getElementById(choice).classList.add("clicked");
+        reduced_ = choice;
+    } else {
+        document.getElementById(reduced_).classList.remove("clicked");
+        document.getElementById(choice).classList.add("clicked");
+        reduced_ = choice;
+    }
+}
+
+
 function generate() { // trigger on generate button click
     var typewriter = new Typewriter(app, {
         loop: false,
@@ -135,15 +241,15 @@ function generate() { // trigger on generate button click
     k_.setSocks(
         null // TODO
     )
+    k_.setReduced(
+        reduced_
+    )
 
     output_ = k_.dump()
-
-    delete typewriter;
     t.stop()
+
+
+
     document.getElementById("loader").innerText = "Successfully generated!"
     document.getElementById("output").innerText = output_;
-
 }
-
-
-
