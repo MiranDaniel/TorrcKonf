@@ -124,7 +124,11 @@ class Konf {
         this.contact = con_;
     }
     setIpvsix(addy_) {
-        this.ipvsix = addy_;
+        if(addy_ !== ""){
+            this.ipvsix = addy_;
+        } else{
+            this.ipvsix = null;
+        }
     }
     setSocks(port_) {
         this.socksPort = 0; // optional socks will be implemented later
@@ -199,7 +203,9 @@ function reducedChoice(choice) {
 }
 
 
+
 function generate() { // trigger on generate button click
+    var startTime = performance.now()
     var typewriter = new Typewriter(app, {
         loop: false,
         cursor: "<strong>|</strong>"
@@ -221,6 +227,7 @@ function generate() { // trigger on generate button click
         .deleteAll()
         .typeString('Looks like something broke, please try again.')
         .start();
+
 
 
     const k_ = new Konf();
@@ -249,7 +256,8 @@ function generate() { // trigger on generate button click
     t.stop()
 
 
-
-    document.getElementById("loader").innerText = "Successfully generated!"
+    var endTime = performance.now()
+    document.getElementById("loader").innerHTML = `Successfully generated <small>in ${endTime-startTime}ms</small>`
     document.getElementById("output").innerText = output_;
+    document.getElementById("feedback").style.display = "unset";
 }
