@@ -77,6 +77,9 @@ ExitPolicy reject *:*`
 
 var app = document.getElementById('loader'); // loader in button
 
+const regexIpvsix = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/gi;
+
+
 var type_ = null; // type of node (bridge, relay, exit)
 var reduced_ = null;
 var output_ = "";
@@ -99,6 +102,7 @@ class Konf {
         this.reduced = null;
 
         this.conf = Array();
+        this.alerts = Array();
     }
     setType(t_) {
         if (t_ === "choice-bridge") {
@@ -110,22 +114,40 @@ class Konf {
         }
     }
     setPorts(or_, dir_) {
+        if(or_ < 1025){
+            this.alerts.push(["info","ORPort is under 1024, Tor will need root privileges to run!"])
+        }
+        if(dir_ < 1025){
+            this.alerts.push(["info","DirPort is under 1024, Tor will need root privileges to run!"])
+        }
         this.orPort = or_;
         this.dirPort = dir_;
     }
     setName(name_) {
-        if (name_ === null) {
-            this.name = "Unnamed"
-        } else {
+        if (name_ !== "") {
             this.name = name_;
+        } else {
+            this.name = "Unnamed"
+            this.alerts.push(["info","Relay nickname not set! Others will have to refer to your relay by it's key!"])
         }
     }
     setContact(con_) {
-        this.contact = con_;
+        if(con_ !== ""){
+            this.contact = con_;
+        } else{
+            this.contact = "";
+            this.alerts.push(["info","Contact information not set!"])
+        }
     }
     setIpvsix(addy_) {
         if(addy_ !== ""){
-            this.ipvsix = addy_;
+            if(regexIpvsix.test(addy_) === true){
+                alert(regexIpvsix.test(addy_))
+                this.ipvsix = addy_;
+            } else{
+                this.ipvsix = addy_;
+                this.alerts.push(["critical","Invalid IPv6! Relay will not run, even on IPv4!"])
+            }
         } else{
             this.ipvsix = null;
         }
@@ -174,6 +196,24 @@ class Konf {
         this.preDump();
         console.log(this.conf);
         return this.conf.join("\n")
+    }
+    info(){
+        let dat = "";
+        this.alerts.reverse()
+        this.alerts.push(["primary",`<b>Compiled with ${this.alerts.length} warnings/errors!</b>`])
+        this.alerts.reverse()
+        for(let i=0; i<this.alerts.length; i++){
+            let t = this.alerts[i];
+            if(t[0] === "critical"){
+                dat = dat+`<span class='alert-danger'><b>Critical</b> &mid; ${t[1]}</span>`+"\n"
+            } else if(t[0] === "info"){
+                dat = dat+`<span class='alert-info'><b>Info</b> &mid; ${t[1]}</span>`+"\n"
+            } else if(t[0] === "primary"){
+                dat = dat+`<span class='alert-primary'>${t[1]}</span><br>`+"\n"
+            }
+            
+        }
+        return dat
     }
 
 }
@@ -229,9 +269,10 @@ function generate() { // trigger on generate button click
         .start();
 
 
-
     const k_ = new Konf();
-    k_.setType(type_);
+    k_.setType(
+        type_
+    );
     k_.setPorts(
         document.getElementById("input-relay-orport").value,
         document.getElementById("input-relay-dirport").value
@@ -253,11 +294,14 @@ function generate() { // trigger on generate button click
     )
 
     output_ = k_.dump()
+    info_ = k_.info()
     t.stop()
 
 
     var endTime = performance.now()
-    document.getElementById("loader").innerHTML = `Successfully generated <small>in ${endTime-startTime}ms</small>`
     document.getElementById("output").innerText = output_;
+    document.getElementById("info").innerHTML = info_;
     document.getElementById("feedback").style.display = "unset";
+    document.getElementById("loader").innerHTML = `Successfully generated <small>in ${endTime-startTime}ms</small>`
+
 }
