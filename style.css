@@ -28,6 +28,20 @@ footer{
     left: 0;
     position:relative;
     width: 100%;
+    z-index: -5;
+}
+.ver{
+  bottom: 3px;
+  right: 3px;
+  position:relative;
+  width: 100%;
+  z-index: -5;
+}
+.inner-ver{
+  position:absolute;
+  bottom: 0;
+  right: 0;
+  float: right;
 }
 .icon{
   filter: invert(48%) sepia(13%) saturate(3207%) hue-rotate(250deg) brightness(50%) contrast(80%);
@@ -70,4 +84,8 @@ pre{
 .md:hover{
   color: #59316B;
   background-color: #F8F9FA;
+}
+#feedback,
+#fer{
+  display: none;
 }

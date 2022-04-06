@@ -77,8 +77,13 @@ ExitPolicy reject *:*`
 
 var app = document.getElementById('loader'); // loader in button
 
+const regexIpvsix = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/gi;
+
+
 var type_ = null; // type of node (bridge, relay, exit)
 var reduced_ = null;
+var nyx_ = null;
+var notice_ = null;
 var output_ = "";
 
 
@@ -97,8 +102,11 @@ class Konf {
         this.socksPort = null;
 
         this.reduced = null;
+        this.nyx = null;
+        this.notice = null;
 
         this.conf = Array();
+        this.alerts = Array();
     }
     setType(t_) {
         if (t_ === "choice-bridge") {
@@ -110,21 +118,52 @@ class Konf {
         }
     }
     setPorts(or_, dir_) {
+        if (or_ === "") {
+            or_ = 9050;
+            this.alerts.push(["info", "You have not set your ORPort, defaulting to 9050"])
+        }
+        if (dir_ === "") {
+            dir_ = 9030;
+            this.alerts.push(["info", "You have not set your DirPort, defaulting to 9030"])
+        }
+        if (or_ < 1025) {
+            this.alerts.push(["info", "ORPort is under 1024, Tor will need root privileges to run!"])
+        }
+        if (dir_ < 1025) {
+            this.alerts.push(["info", "DirPort is under 1024, Tor will need root privileges to run!"])
+        }
         this.orPort = or_;
         this.dirPort = dir_;
     }
     setName(name_) {
-        if (name_ === null) {
-            this.name = "Unnamed"
-        } else {
+        if (name_ !== "") {
             this.name = name_;
+        } else {
+            this.name = "Unnamed"
+            this.alerts.push(["info", "Relay nickname not set! Others will have to refer to your relay by it's key!"])
         }
     }
     setContact(con_) {
-        this.contact = con_;
+        if (con_ !== "") {
+            this.contact = con_;
+        } else {
+            this.contact = "Contact information not set! :(";
+            this.alerts.push(["warning", "Contact information not set!"])
+        }
     }
     setIpvsix(addy_) {
-        this.ipvsix = addy_;
+        if (addy_ !== "") {
+            if (regexIpvsix.test(addy_) === true) {
+                alert(regexIpvsix.test(addy_))
+                this.ipvsix = addy_;
+            } else {
+                this.ipvsix = addy_;
+                this.alerts.push(["critical", "Invalid IPv6! Relay will not run, even on IPv4!"])
+            }
+        } else {
+            this.alerts.push(["info", "You have not set an IPv6 address, this is fine if your node does not support IPv6 but if it does you should consider setting it."])
+            this.ipvsix = null;
+        }
     }
     setSocks(port_) {
         this.socksPort = 0; // optional socks will be implemented later
@@ -136,14 +175,38 @@ class Konf {
             this.reduced = false;
         }
     }
+    setNyx(option_) {
+        if (option_ === "input-nyx-on") {
+            this.nyx = "ControlPort 9051\nCookieAuthentication 1";
+        } else {
+            this.nyx = false;
+        }
+    }
+    setNotice(option_) {
+        if (option_ === "input-notice-on") {
+            this.notice = "DirPortFrontPage /etc/tor/tor-exit-notice.html";
+        } else {
+            this.notice = null;
+        }
+    }
 
 
     preDump() {
+        if (this.type_ === null) {
+            this.alerts.push(["danger", "No node type set! Defaulting to relay"])
+        }
         this.conf.push(`ORPort ${this.orPort}`)
         if (this.ipvsix !== null) {
             this.conf.push(`ORPort [${this.ipvsix}]:auto`)
         }
+        if (this.nyx !== false) {
+            this.conf.push(this.nyx)
+        }
+
         this.conf.push(`DirPort ${this.dirPort}`)
+        if (this.notice !== null) {
+            this.conf.push(this.notice)
+        }
         this.conf.push(`Nickname ${this.name}`)
         this.conf.push(`ContactInfo ${this.contact}`)
 
@@ -171,6 +234,26 @@ class Konf {
         console.log(this.conf);
         return this.conf.join("\n")
     }
+    info() {
+        let dat = "";
+        this.alerts.reverse()
+        this.alerts.push(["primary", `<b>Compiled with ${this.alerts.length} messages!</b>`])
+        this.alerts.reverse()
+        for (let i = 0; i < this.alerts.length; i++) {
+            let t = this.alerts[i];
+            if (t[0] === "critical") {
+                dat = dat + `<span class='alert-danger'><b>Critical</b> &mid; ${t[1]}</span>` + "\n"
+            } else if (t[0] === "info") {
+                dat = dat + `<span class='alert-info'><b>Info</b> &mid; ${t[1]}</span>` + "\n"
+            } else if (t[0] === "primary") {
+                dat = dat + `<span class='alert-primary'>${t[1]}</span><br>` + "\n"
+            } else if (t[0] === "warning") {
+                dat = dat + `<span class='alert-warning'><b>Warning</b> &mid; ${t[1]}</span>` + "\n"
+            }
+
+        }
+        return dat
+    }
 
 }
 function typeChoice(choice) { // handler for type picker
@@ -183,6 +266,12 @@ function typeChoice(choice) { // handler for type picker
         document.getElementById(type_).classList.remove("clicked");
         document.getElementById(choice).classList.add("clicked");
         type_ = choice;
+    }
+
+    if (type_ === "choice-exit") {
+        document.getElementById("fer").style.display = "unset";
+    } else {
+        document.getElementById("fer").style.display = "none";
     }
 }
 function reducedChoice(choice) {
@@ -197,9 +286,34 @@ function reducedChoice(choice) {
         reduced_ = choice;
     }
 }
+function nyxChoice(choice) {
+    if (choice === nyx_) {
+        return;
+    } else if (nyx_ === null) {
+        document.getElementById(choice).classList.add("clicked");
+        nyx_ = choice;
+    } else {
+        document.getElementById(nyx_).classList.remove("clicked");
+        document.getElementById(choice).classList.add("clicked");
+        nyx_ = choice;
+    }
+}
+function noticeChoice(choice) {
+    if (choice === notice_) {
+        return;
+    } else if (notice_ === null) {
+        document.getElementById(choice).classList.add("clicked");
+        notice_ = choice;
+    } else {
+        document.getElementById(notice_).classList.remove("clicked");
+        document.getElementById(choice).classList.add("clicked");
+        notice_ = choice;
+    }
+}
 
 
 function generate() { // trigger on generate button click
+    var startTime = performance.now()
     var typewriter = new Typewriter(app, {
         loop: false,
         cursor: "<strong>|</strong>"
@@ -224,7 +338,9 @@ function generate() { // trigger on generate button click
 
 
     const k_ = new Konf();
-    k_.setType(type_);
+    k_.setType(
+        type_
+    );
     k_.setPorts(
         document.getElementById("input-relay-orport").value,
         document.getElementById("input-relay-dirport").value
@@ -244,12 +360,25 @@ function generate() { // trigger on generate button click
     k_.setReduced(
         reduced_
     )
+    k_.setNyx(
+        nyx_
+    )
+    k_.setNotice(
+        notice_
+    )
 
     output_ = k_.dump()
+    info_ = k_.info()
     t.stop()
 
 
-
-    document.getElementById("loader").innerText = "Successfully generated!"
+    var endTime = performance.now()
     document.getElementById("output").innerText = output_;
+    document.getElementById("info").innerHTML = info_;
+    document.getElementById("feedback").style.display = "unset";
+    document.getElementById("loader").innerHTML = `Successfully generated <small>in ${endTime - startTime}ms</small>`
+
+}
+function luk() {
+    document.getElementById("luk").innerText = "me@mirandaniel.com"
 }
